@@ -3,6 +3,7 @@
 Usage:  uv run python scripts/run_game.py   (or simply `love .`)
 """
 
+import os
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,9 @@ CANDIDATES = [
     "/opt/homebrew/bin/love",
     "/Applications/love.app/Contents/MacOS/love",
     r"C:\Program Files\LOVE\love.exe",
+    # AppImage extracted on hosts without FUSE:
+    #   <appimage> --appimage-extract  ->  ~/love-appimage/squashfs-root/AppRun
+    "~/love-appimage/squashfs-root/AppRun",
 ]
 
 
@@ -24,8 +28,9 @@ def find_love() -> str | None:
     if exe:
         return exe
     for path in CANDIDATES:
-        if Path(path).exists():
-            return path
+        expanded = Path(os.path.expanduser(path))
+        if expanded.exists():
+            return str(expanded)
     return None
 
 
