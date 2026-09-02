@@ -1,0 +1,16 @@
+[project]
+name = "tower-bloxx"
+version = "0.1.0"
+description = "Tower Bloxx-inspired stacking game written in Lua for the LOVE framework"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+# Dev tooling managed by uv:
+#   lupa  - LuaJIT/Lua bindings used to syntax-check all .lua files (scripts/check_syntax.py)
+dev = ["lupa>=2.0"]
+
+[tool.uv]
+# The game itself is Lua/LOVE, not a Python package - uv only manages the dev environment.
+package = false
