@@ -5,8 +5,8 @@ function love.conf(t)
     t.identity = "tower-bloxx"       -- save directory name (best scores)
     t.version = "11.4"               -- target LOVE version
     t.title = "Tower Bloxx"
-    t.window.width = 480
-    t.window.height = 800
+    t.window.width = 540
+    t.window.height = 900
     t.window.minwidth = 360
     t.window.minheight = 600
     t.window.resizable = true

@@ -17,10 +17,10 @@ local Menu = { time = 0, best = 0 }
 
 local function languageButtons()
     local codes = I18n.languages
-    local bw, bh, gap = 82, 34, 6
+    local bw, bh, gap = 90, 44, 6
     local total = #codes * bw + (#codes - 1) * gap
     local x0 = (W - total) / 2
-    local y = H - 110
+    local y = H - 120
     local buttons = {}
     for i, code in ipairs(codes) do
         buttons[i] = {
@@ -136,30 +136,32 @@ function Menu.drawLanguageSelector()
     love.graphics.setColor(1, 1, 1, 0.85)
     love.graphics.printf(label, 0, labelY, W, "center")
 
+    Menu.fontButton = Menu.fontButton or I18n.font(16)
+
     for _, b in ipairs(btns) do
         local active = b.code == I18n.current
         if active then
-            love.graphics.setColor(1, 0.85, 0.35, 0.30)
+            love.graphics.setColor(1, 0.85, 0.35, 0.45)
         else
-            love.graphics.setColor(0.10, 0.14, 0.28, 0.45)
+            love.graphics.setColor(0.10, 0.14, 0.28, 0.70)
         end
-        love.graphics.rectangle("fill", b.x, b.y, b.w, b.h, 6, 6)
+        love.graphics.rectangle("fill", b.x, b.y, b.w, b.h, 8, 8)
 
         if active then
             love.graphics.setColor(1, 0.85, 0.35)
         else
-            love.graphics.setColor(1, 1, 1, 0.55)
+            love.graphics.setColor(1, 1, 1, 0.85)
         end
-        love.graphics.setLineWidth(active and 2 or 1)
-        love.graphics.rectangle("line", b.x, b.y, b.w, b.h, 6, 6)
+        love.graphics.setLineWidth(active and 3 or 2)
+        love.graphics.rectangle("line", b.x, b.y, b.w, b.h, 8, 8)
 
-        love.graphics.setFont(Menu.fontSmall)
+        love.graphics.setFont(Menu.fontButton)
         if active then
             love.graphics.setColor(1, 1, 1)
         else
-            love.graphics.setColor(1, 1, 1, 0.8)
+            love.graphics.setColor(1, 1, 1, 0.95)
         end
-        love.graphics.printf(I18n.names[b.code], b.x, b.y + (b.h - Menu.fontSmall:getHeight()) / 2,
+        love.graphics.printf(I18n.names[b.code], b.x, b.y + (b.h - Menu.fontButton:getHeight()) / 2,
             b.w, "center")
     end
 end
