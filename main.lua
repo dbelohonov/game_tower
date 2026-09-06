@@ -4,6 +4,7 @@
 local Scene = require("src.scene_manager")
 local Screen = require("src.screen")
 local Sfx = require("src.sfx")
+local I18n = require("src.i18n")
 
 Scene.register("menu", require("src.states.menu"))
 Scene.register("game", require("src.states.game"))
@@ -14,6 +15,7 @@ function love.load()
     love.math.setRandomSeed(os.time())
     Screen.init()
     Sfx.init()
+    I18n.init()
     Scene.switch("menu")
 end
 

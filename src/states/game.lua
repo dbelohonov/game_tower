@@ -12,6 +12,7 @@ local Hud = require("src.hud")
 local Blocks = require("src.blocks")
 local Sfx = require("src.sfx")
 local Save = require("src.save")
+local I18n = require("src.i18n")
 
 local W, H = Config.screen.width, Config.screen.height
 local GRAVITY = Config.physics.gravity
@@ -118,8 +119,8 @@ function Game.resolveLanding()
         Game.score = Game.score + 10 + bonus
         Sfx.play("perfect")
         local text = Game.combo > 1
-            and string.format("PERFECT x%d  +%d", Game.combo, bonus)
-            or string.format("PERFECT  +%d", bonus)
+            and string.format("%s x%d  +%d", I18n.t("game.perfect"), Game.combo, bonus)
+            or string.format("%s  +%d", I18n.t("game.perfect"), bonus)
         Game.addPopup(text, crane.blockX, surfaceY - 70, { 1, 0.88, 0.35 })
     else
         -- keep only the overlapping part
@@ -155,7 +156,7 @@ function Game.registerMiss(left, w, surfaceY, crane)
     Game.combo = 0
     Game.camera:shake(9, 0.35)
     Sfx.play("miss")
-    Game.addPopup("MISS", crane.blockX, surfaceY - 60, { 1, 0.4, 0.4 })
+    Game.addPopup(I18n.t("game.miss"), crane.blockX, surfaceY - 60, { 1, 0.4, 0.4 })
 
     if Game.lives <= 0 then
         Game.finish()
@@ -284,10 +285,10 @@ function Game.draw()
         love.graphics.rectangle("fill", 0, 0, W, H)
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(Game.hud.fontBig)
-        love.graphics.printf("PAUSED", 0, H * 0.42, W, "center")
+        love.graphics.printf(I18n.t("game.paused"), 0, H * 0.42, W, "center")
         love.graphics.setFont(Game.hud.fontSmall)
         love.graphics.setColor(1, 1, 1, 0.85)
-        love.graphics.printf("P - resume      ESC - menu", 0, H * 0.42 + 60, W, "center")
+        love.graphics.printf(I18n.t("game.pausedHint"), 0, H * 0.42 + 60, W, "center")
     end
 end
 

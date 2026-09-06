@@ -8,6 +8,7 @@ __pycache__/
 *.love
 build/
 dist/
+vendor/
 
 # Editors / OS
 .vscode/

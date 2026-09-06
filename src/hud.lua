@@ -3,6 +3,7 @@
 
 local Config = require("src.config")
 local Sfx = require("src.sfx")
+local I18n = require("src.i18n")
 
 local W, H = Config.screen.width, Config.screen.height
 
@@ -11,9 +12,9 @@ Hud.__index = Hud
 
 function Hud.new()
     local self = setmetatable({}, Hud)
-    self.fontBig = love.graphics.newFont(26)
-    self.fontMedium = love.graphics.newFont(18)
-    self.fontSmall = love.graphics.newFont(13)
+    self.fontBig = I18n.font(26)
+    self.fontMedium = I18n.font(18)
+    self.fontSmall = I18n.font(13)
     return self
 end
 
@@ -40,13 +41,13 @@ local function drawHeart(x, y, r, filled)
 end
 
 function Hud:draw(game)
-    shadowPrint(string.format("FLOORS  %d", game.tower:height()), 14, 12, self.fontBig)
-    shadowPrint(string.format("SCORE  %d", game.score), 14, 44, self.fontMedium)
+    shadowPrint(I18n.tf("hud.floors", game.tower:height()), 14, 12, self.fontBig)
+    shadowPrint(I18n.tf("hud.score", game.score), 14, 44, self.fontMedium)
 
     if game.combo > 1 then
         love.graphics.setColor(1, 0.85, 0.3)
         love.graphics.setFont(self.fontSmall)
-        love.graphics.print(string.format("PERFECT COMBO x%d", game.combo), 14, 68)
+        love.graphics.print(I18n.tf("hud.combo", game.combo), 14, 68)
     end
 
     for i = 1, Config.gameplay.lives do
@@ -57,13 +58,13 @@ function Hud:draw(game)
         local a = 0.55 + 0.45 * math.sin(game.time * 5)
         love.graphics.setColor(1, 1, 1, a)
         love.graphics.setFont(self.fontMedium)
-        love.graphics.printf("SPACE / CLICK - drop the block!", 0, H - 60, W, "center")
+        love.graphics.printf(I18n.t("hud.dropHint"), 0, H - 60, W, "center")
     end
 
     if not Sfx.enabled then
         love.graphics.setColor(1, 1, 1, 0.6)
         love.graphics.setFont(self.fontSmall)
-        love.graphics.print("MUTED (M)", 14, H - 26)
+        love.graphics.print(I18n.t("hud.muted"), 14, H - 26)
     end
 end
 

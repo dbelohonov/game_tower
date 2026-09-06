@@ -8,6 +8,9 @@ the part that overlaps the floor below stays, the overhang is cut away.
 Miss three times and the game is over. Perfect drops keep your blocks wide
 and build a combo bonus.
 
+The menu and UI are localized into **English, Russian, German, French and
+Slovak** (switched from the title screen).
+
 ## Requirements
 
 | Tool | Why | Install |
@@ -29,6 +32,31 @@ directory:
 love .
 ```
 
+## Install as a Windows program (.exe)
+
+The game can be packaged into a standalone Windows executable — no LÖVE
+installation needed on the target machine:
+
+```bash
+uv run python scripts/build_exe.py
+```
+
+The first run downloads the official LÖVE 11.5 Windows runtime (cached in
+`vendor/`), fuses it with the game source and produces:
+
+| Artifact | What it is |
+|----------|------------|
+| 📦 [**`dist/TowerBloxx-0.1.0-win64.zip`**](dist/TowerBloxx-0.1.0-win64.zip) | distributable package — **install this** |
+| `dist/TowerBloxx-win64/TowerBloxx.exe` | the game as a single program |
+
+To install: unzip the package anywhere (e.g. `C:\Games\TowerBloxx`) and run
+`TowerBloxx.exe`. Your best score is kept in `%APPDATA%\LOVE\tower-bloxx`.
+
+> Building offline? Put a copy of
+> [love-11.5-win64.zip](https://github.com/love2d/love/releases/download/11.5/love-11.5-win64.zip)
+> next to you and pass it explicitly:
+> `uv run python scripts/build_exe.py --love-zip /path/to/love-11.5-win64.zip`
+
 ## Controls
 
 | Input | Action |
@@ -36,6 +64,7 @@ love .
 | `SPACE` / click / tap | drop the swinging block |
 | `P` | pause |
 | `M` | sound on/off |
+| `LEFT` / `RIGHT` or clicking a button | change menu language (EN / RU / DE / FR / SK) |
 | `ESC` | back to menu / quit from menu |
 
 ## Gameplay rules
@@ -53,6 +82,7 @@ love .
 uv sync                              # install/refresh dev dependencies
 uv run python scripts/check_syntax.py  # parse-check all .lua files
 uv run python scripts/run_game.py      # launch the game
+uv run python scripts/build_exe.py     # package the Windows .exe (see above)
 ```
 
 ## Project layout
@@ -72,14 +102,18 @@ src/
   hud.lua                floors, score, lives, hints
   sfx.lua                sound effects synthesized at runtime (no assets)
   save.lua               best-score persistence (love.filesystem)
+  i18n.lua               localization (EN/RU/DE/FR/SK), plural rules, fonts
   states/
-    menu.lua             title screen
+    menu.lua             title screen + language selector
     game.lua             core gameplay loop
     gameover.lua         results screen
 scripts/
   run_game.py            finds and launches `love .`
   check_syntax.py        Lua syntax check via lupa (LuaJIT)
-assets/                  reserved for future art / audio / fonts
+  build_exe.py           packages the Windows .exe (fuses LÖVE + game)
+assets/
+  fonts/DejaVuSans.ttf   Unicode UI font (Latin + Cyrillic)
+  fonts/LICENSE-DejaVu.txt  its license (must ship with the game)
 ```
 
 ## Roadmap
