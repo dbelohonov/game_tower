@@ -3,7 +3,8 @@
 local Config = {}
 
 -- Logical resolution; the real window is letterboxed onto this canvas.
-Config.screen = { width = 480, height = 800 }
+-- Wide enough that every language button label fits on a single line.
+Config.screen = { width = 600, height = 800 }
 
 Config.block = {
     startWidth = 150,   -- width of the first block

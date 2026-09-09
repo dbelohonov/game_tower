@@ -3,6 +3,7 @@
 
 local Config = require("src.config")
 local Sfx = require("src.sfx")
+local Save = require("src.save")
 local I18n = require("src.i18n")
 
 local W, H = Config.screen.width, Config.screen.height
@@ -15,6 +16,7 @@ function Hud.new()
     self.fontBig = I18n.font(26)
     self.fontMedium = I18n.font(18)
     self.fontSmall = I18n.font(13)
+    self.best = Save.loadBest()
     return self
 end
 
@@ -44,10 +46,14 @@ function Hud:draw(game)
     shadowPrint(I18n.tf("hud.floors", game.tower:height()), 14, 12, self.fontBig)
     shadowPrint(I18n.tf("hud.score", game.score), 14, 44, self.fontMedium)
 
+    if self.best > 0 then
+        shadowPrint(I18n.tf("hud.best", I18n.floorsText(self.best)), 14, 68, self.fontSmall)
+    end
+
     if game.combo > 1 then
         love.graphics.setColor(1, 0.85, 0.3)
         love.graphics.setFont(self.fontSmall)
-        love.graphics.print(I18n.tf("hud.combo", game.combo), 14, 68)
+        love.graphics.print(I18n.tf("hud.combo", game.combo), 14, 90)
     end
 
     for i = 1, Config.gameplay.lives do

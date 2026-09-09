@@ -2,14 +2,13 @@
 
 local Config = require("src.config")
 local Scene = require("src.scene_manager")
-local Save = require("src.save")
 local Sfx = require("src.sfx")
 local Blocks = require("src.blocks")
 local I18n = require("src.i18n")
 
 local W, H = Config.screen.width, Config.screen.height
 
-local Menu = { time = 0, best = 0 }
+local Menu = { time = 0 }
 
 ---------------------------------------------------------------------------
 -- language selector layout
@@ -17,7 +16,7 @@ local Menu = { time = 0, best = 0 }
 
 local function languageButtons()
     local codes = I18n.languages
-    local bw, bh, gap = 90, 44, 6
+    local bw, bh, gap = 108, 44, 8
     local total = #codes * bw + (#codes - 1) * gap
     local x0 = (W - total) / 2
     local y = H - 120
@@ -49,7 +48,6 @@ end
 
 function Menu.enter()
     Menu.time = 0
-    Menu.best = Save.loadBest()
 end
 
 function Menu.update(dt)
@@ -116,18 +114,12 @@ function Menu.draw()
         I18n.t("menu.hintDrop") .. "\n" .. I18n.t("menu.hintStack") .. "\n" .. I18n.t("menu.hintKeys"),
         0, 490, W, "center")
 
-    if Menu.best > 0 then
-        love.graphics.setFont(Menu.fontMedium)
-        love.graphics.setColor(1, 0.9, 0.4)
-        love.graphics.printf(I18n.tf("menu.best", I18n.floorsText(Menu.best)), 0, 580, W, "center")
-    end
-
     Menu.drawLanguageSelector()
 end
 
 function Menu.drawLanguageSelector()
     local btns = languageButtons()
-    local labelY = btns[1].y - 30
+    local labelY = btns[1].y + btns[1].h + 10
 
     local label = I18n.t("menu.language") .. "   (LEFT / RIGHT)"
     love.graphics.setFont(Menu.fontSmall)
