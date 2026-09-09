@@ -101,18 +101,30 @@ function Menu.draw()
     love.graphics.setColor(1, 1, 1, 0.85)
     love.graphics.printf(I18n.t("menu.subtitle"), 0, 288, W, "center")
 
+    -- The prompt + hints group is centred between the title block and the
+    -- demo tower, so the empty space above and below it stays equal.
+    local subtitleY = 288
+    local nameBottom = subtitleY + Menu.fontSmall:getHeight()
+    local demoTop = H - 90 - 4 * 40 -- top of the highest demo block
+    local pressH = Menu.fontMedium:getHeight()
+    local hintsH = Menu.fontSmall:getHeight() * 3
+    local innerGap = 48
+    local margin = ((demoTop - nameBottom) - (pressH + innerGap + hintsH)) / 2
+    local pressY = nameBottom + margin
+    local hintsY = pressY + pressH + innerGap
+
     -- blinking prompt
     if math.sin(Menu.time * 4) > -0.4 then
         love.graphics.setFont(Menu.fontMedium)
         love.graphics.setColor(1, 1, 0.75)
-        love.graphics.printf(I18n.t("menu.pressStart"), 0, 420, W, "center")
+        love.graphics.printf(I18n.t("menu.pressStart"), 0, pressY, W, "center")
     end
 
     love.graphics.setFont(Menu.fontSmall)
     love.graphics.setColor(1, 1, 1, 0.85)
     love.graphics.printf(
         I18n.t("menu.hintDrop") .. "\n" .. I18n.t("menu.hintStack") .. "\n" .. I18n.t("menu.hintKeys"),
-        0, 490, W, "center")
+        0, hintsY, W, "center")
 
     Menu.drawLanguageSelector()
 end
