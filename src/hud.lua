@@ -20,7 +20,7 @@ end
 
 local function shadowPrint(text, x, y, font, ox)
     love.graphics.setFont(font)
-    love.graphics.setColor(0, 0, 0, 0.45)
+    love.graphics.setColor(0, 0, 0, 0.6)
     love.graphics.print(text, x + 2, y + 2, 0, 1, 1, ox or 0, 0)
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(text, x, y, 0, 1, 1, ox or 0, 0)

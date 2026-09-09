@@ -61,11 +61,11 @@ end
 ---------------------------------------------------------------------------
 
 function Menu.draw()
-    -- gradient sky
+    -- gradient sky (kept dark so the white UI text stays readable)
     local bands = 14
     for i = 0, bands - 1 do
         local t = i / bands
-        love.graphics.setColor(0.33 + 0.45 * t, 0.62 + 0.29 * t, 0.93 + 0.07 * t)
+        love.graphics.setColor(0.14 + 0.26 * t, 0.32 + 0.24 * t, 0.55 + 0.16 * t)
         love.graphics.rectangle("fill", 0, t * H, W, H / bands + 1)
     end
 
@@ -80,14 +80,14 @@ function Menu.draw()
         Blocks.draw(W / 2 - 75 + math.sin(Menu.time * 1.2 + i) * 3, H - 90 - i * 40, 150, i - 1)
     end
 
-    -- swinging crane diorama
+    -- swinging crane diorama; the beam sits flush against the top border
     local swing = math.sin(Menu.time * 1.6) * 120
     love.graphics.setColor(0.28, 0.30, 0.36)
-    love.graphics.rectangle("fill", -50, 40, W + 100, 14)
+    love.graphics.rectangle("fill", -50, 0, W + 100, 14)
     love.graphics.setColor(0.6, 0.6, 0.66)
     love.graphics.setLineWidth(2)
-    love.graphics.line(W / 2 + swing, 54, W / 2 + swing, 150)
-    Blocks.draw(W / 2 + swing - 55, 150, 110, 4)
+    love.graphics.line(W / 2 + swing, 14, W / 2 + swing, 110)
+    Blocks.draw(W / 2 + swing - 55, 110, 110, 4)
 
     Menu.fontTitle = Menu.fontTitle or I18n.font(52)
     Menu.fontMedium = Menu.fontMedium or I18n.font(18)

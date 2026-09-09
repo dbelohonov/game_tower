@@ -5,8 +5,9 @@ local Config = require("src.config")
 
 local W, H = Config.screen.width, Config.screen.height
 
-local SKY_TOP_DAY = { 0.33, 0.62, 0.93 }
-local SKY_BOTTOM_DAY = { 0.78, 0.91, 1.00 }
+-- Day sky is kept fairly dark/desaturated so the HUD text stays readable.
+local SKY_TOP_DAY = { 0.16, 0.38, 0.64 }
+local SKY_BOTTOM_DAY = { 0.48, 0.62, 0.78 }
 local SKY_TOP_SPACE = { 0.04, 0.05, 0.15 }
 local SKY_BOTTOM_SPACE = { 0.20, 0.24, 0.45 }
 
@@ -85,11 +86,11 @@ function Background:draw(camera, floors, time)
         end
     end
 
-    -- sun
+    -- sun (dimmed so it does not compete with the HUD text)
     local sunY = 110 + alt * 60
-    love.graphics.setColor(1, 0.92, 0.55, 0.25)
+    love.graphics.setColor(1, 0.92, 0.55, 0.12)
     love.graphics.circle("fill", W * 0.78, sunY, 46)
-    love.graphics.setColor(1, 0.92, 0.55, 0.95)
+    love.graphics.setColor(1, 0.92, 0.55, 0.55)
     love.graphics.circle("fill", W * 0.78, sunY, 34)
 
     -- clouds with parallax; they fade away as we reach space
@@ -99,7 +100,7 @@ function Background:draw(camera, floors, time)
         local span = H + 120
         for _, c in ipairs(self.clouds) do
             local sy = (c.y + rise * c.depth) % span - 60
-            self:drawCloud(c.x, sy, c.w, 0.8 * cloudAlpha)
+            self:drawCloud(c.x, sy, c.w, 0.45 * cloudAlpha)
         end
     end
 end

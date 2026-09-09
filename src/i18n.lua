@@ -15,7 +15,8 @@
 local I18n = {}
 
 local LANG_FILE = "language.txt"
-local FONT_PATH = "assets/fonts/DejaVuSans.ttf" -- covers Latin + Cyrillic
+local FONT_PATH = "assets/fonts/DejaVuSans-Bold.ttf" -- bold for readability; covers Latin + Cyrillic
+local FONT_PATH_REGULAR = "assets/fonts/DejaVuSans.ttf"
 
 -- Order matters: this is the order of the buttons in the menu selector.
 I18n.languages = { "en", "ru", "de", "fr", "sk" }
@@ -269,35 +270,39 @@ function I18n.tf(key, ...)
 end
 
 ---------------------------------------------------------------------------
--- Unicode font helper (DejaVu Sans covers Latin + Cyrillic + diacritics)
+-- Unicode font helper (DejaVu Sans covers Latin + Cyrillic + diacritics).
+-- I18n.font(size) returns the BOLD face (all UI text is bold for
+-- readability); I18n.font(size, "regular") returns the normal weight.
 ---------------------------------------------------------------------------
 
 local fontCache = {}
-local fontChecked, fontOk = false, false
+local fontAvailable = {}
 
-local function unicodeFontAvailable()
-    if not fontChecked then
-        fontChecked = true
-        fontOk = love.filesystem.getInfo(FONT_PATH) ~= nil
-        if not fontOk then
-            print("i18n: " .. FONT_PATH .. " not found, falling back to the default font")
+local function unicodeFontAvailable(path)
+    if fontAvailable[path] == nil then
+        fontAvailable[path] = love.filesystem.getInfo(path) ~= nil
+        if not fontAvailable[path] then
+            print("i18n: " .. path .. " not found, falling back to the default font")
         end
     end
-    return fontOk
+    return fontAvailable[path]
 end
 
-function I18n.font(size)
-    local cached = fontCache[size]
+function I18n.font(size, weight)
+    weight = (weight == "regular") and "regular" or "bold"
+    local key = size .. "/" .. weight
+    local cached = fontCache[key]
     if cached then
         return cached
     end
+    local path = (weight == "regular") and FONT_PATH_REGULAR or FONT_PATH
     local font
-    if unicodeFontAvailable() then
-        font = love.graphics.newFont(FONT_PATH, size)
+    if unicodeFontAvailable(path) then
+        font = love.graphics.newFont(path, size)
     else
         font = love.graphics.newFont(size)
     end
-    fontCache[size] = font
+    fontCache[key] = font
     return font
 end
 
