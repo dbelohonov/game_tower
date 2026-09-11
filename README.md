@@ -57,6 +57,24 @@ To install: unzip the package anywhere (e.g. `C:\Games\TowerBloxx`) and run
 > next to you and pass it explicitly:
 > `uv run python scripts/build_exe.py --love-zip /path/to/love-11.5-win64.zip`
 
+## Play in the browser (web build)
+
+The game also runs in any modern browser via
+[love.js](https://github.com/Davidobot/love.js) (LÖVE compiled to
+WebAssembly). One command builds everything into `web/`:
+
+```bash
+uv run python scripts/build_web.py
+python3 -m http.server -d web 8000   # then open http://localhost:8000
+```
+
+`web/` is a plain static site (~5.8 MB, mostly the WASM runtime + fonts) —
+upload it to GitHub Pages, itch.io, nginx, anything. The build uses love.js
+**compatibility mode** (no `SharedArrayBuffer`), so no COOP/COEP response
+headers are needed. Best score and language choice persist between visits
+via IndexedDB; the build script patches love.js to sync the emulated save
+directory back to the browser.
+
 ## Controls
 
 | Input | Action |
@@ -111,6 +129,7 @@ scripts/
   run_game.py            finds and launches `love .`
   check_syntax.py        Lua syntax check via lupa (LuaJIT)
   build_exe.py           packages the Windows .exe (fuses LÖVE + game)
+  build_web.py           packages the browser build (love.js/WASM -> web/)
 assets/
   fonts/DejaVuSans.ttf   Unicode UI font (Latin + Cyrillic)
   fonts/LICENSE-DejaVu.txt  its license (must ship with the game)

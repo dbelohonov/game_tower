@@ -6,8 +6,13 @@ local Save = {}
 local FILE = "best.txt"
 
 function Save.loadBest()
+    -- getInfo() guard: reading a missing file returns corrupted values in
+    -- some builds (love.js/WebAssembly), so only read existing files.
+    if not love.filesystem.getInfo(FILE) then
+        return 0
+    end
     local ok, content = pcall(love.filesystem.read, FILE)
-    if ok and content then
+    if ok and type(content) == "string" then
         return tonumber(content) or 0
     end
     return 0

@@ -227,9 +227,18 @@ function I18n.cycle(dir)
 end
 
 function I18n.init()
-    -- 1) previously saved choice wins
-    local ok, saved = pcall(love.filesystem.read, LANG_FILE)
-    if ok and saved then
+    -- 1) previously saved choice wins.
+    -- getInfo() guard: reading a missing file returns corrupted values in
+    -- some builds (love.js/WebAssembly), so never call read() unless the
+    -- file actually exists.
+    local saved
+    if love.filesystem.getInfo(LANG_FILE) then
+        local okRead, data = pcall(love.filesystem.read, LANG_FILE)
+        if okRead and type(data) == "string" then
+            saved = data
+        end
+    end
+    if saved then
         saved = saved:lower():match("^%a+")
         if saved and isSupported(saved) then
             I18n.current = saved
