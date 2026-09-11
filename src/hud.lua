@@ -2,6 +2,7 @@
 -- Drawn in screen space (after the camera transform is popped).
 
 local Config = require("src.config")
+local Screen = require("src.screen")
 local Sfx = require("src.sfx")
 local Save = require("src.save")
 local I18n = require("src.i18n")
@@ -43,34 +44,39 @@ local function drawHeart(x, y, r, filled)
 end
 
 function Hud:draw(game)
-    shadowPrint(I18n.tf("hud.floors", game.tower:height()), 14, 12, self.fontBig)
-    shadowPrint(I18n.tf("hud.score", game.score), 14, 44, self.fontMedium)
+    -- Anchor to the visible edges so portrait slices keep the HUD on screen.
+    local left = Screen.visibleLeft() + 14
+    local right = Screen.visibleRight() - 14
+
+    shadowPrint(I18n.tf("hud.floors", game.tower:height()), left, 12, self.fontBig)
+    shadowPrint(I18n.tf("hud.score", game.score), left, 44, self.fontMedium)
 
     if self.best > 0 then
-        shadowPrint(I18n.tf("hud.best", I18n.floorsText(self.best)), 14, 68, self.fontSmall)
+        shadowPrint(I18n.tf("hud.best", I18n.floorsText(self.best)), left, 68, self.fontSmall)
     end
 
     if game.combo > 1 then
         love.graphics.setColor(1, 0.85, 0.3)
         love.graphics.setFont(self.fontSmall)
-        love.graphics.print(I18n.tf("hud.combo", game.combo), 14, 90)
+        love.graphics.print(I18n.tf("hud.combo", game.combo), left, 90)
     end
 
     for i = 1, Config.gameplay.lives do
-        drawHeart(W - 24 - (Config.gameplay.lives - i) * 30, 26, 11, i <= game.lives)
+        drawHeart(right - 10 - (Config.gameplay.lives - i) * 30, 26, 11, i <= game.lives)
     end
 
     if game.drops == 0 then
         local a = 0.55 + 0.45 * math.sin(game.time * 5)
         love.graphics.setColor(1, 1, 1, a)
         love.graphics.setFont(self.fontMedium)
-        love.graphics.printf(I18n.t("hud.dropHint"), 0, H - 60, W, "center")
+        love.graphics.printf(I18n.t("hud.dropHint"),
+            Screen.visibleLeft(), H - 60, Screen.visibleRight() - Screen.visibleLeft(), "center")
     end
 
     if not Sfx.enabled then
         love.graphics.setColor(1, 1, 1, 0.6)
         love.graphics.setFont(self.fontSmall)
-        love.graphics.print(I18n.t("hud.muted"), 14, H - 26)
+        love.graphics.print(I18n.t("hud.muted"), left, H - 26)
     end
 end
 

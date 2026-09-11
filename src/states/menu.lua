@@ -2,6 +2,7 @@
 
 local Config = require("src.config")
 local Scene = require("src.scene_manager")
+local Screen = require("src.screen")
 local Sfx = require("src.sfx")
 local Blocks = require("src.blocks")
 local I18n = require("src.i18n")
@@ -14,18 +15,31 @@ local Menu = { time = 0 }
 -- language selector layout
 ---------------------------------------------------------------------------
 
+-- Rows reflow to the visible width: one row when it fits, otherwise rows of
+-- three (narrow portrait windows only show a slice of the logical canvas).
 local function languageButtons()
     local codes = I18n.languages
-    local bw, bh, gap = 108, 44, 8
-    local total = #codes * bw + (#codes - 1) * gap
-    local x0 = (W - total) / 2
-    local y = H - 120
+    local bh, gap = 44, 8
+    local avail = Screen.visibleRight() - Screen.visibleLeft() - 12
+    local bw = 108
+    local perRow = #codes
+    if perRow * bw + (perRow - 1) * gap > avail then
+        perRow = 3
+        bw = math.min(bw, (avail - (perRow - 1) * gap) / perRow)
+    end
+    local rows = math.ceil(#codes / perRow)
+    local totalH = rows * bh + (rows - 1) * gap
+    local y0 = H - 76 - totalH -- block bottom sits above the "Language" label
     local buttons = {}
     for i, code in ipairs(codes) do
+        local row = math.ceil(i / perRow)
+        local inRow = math.min(perRow, #codes - (row - 1) * perRow)
+        local slot = i - (row - 1) * perRow
+        local rowW = inRow * bw + (inRow - 1) * gap
         buttons[i] = {
             code = code,
-            x = x0 + (i - 1) * (bw + gap),
-            y = y,
+            x = (W - rowW) / 2 + (slot - 1) * (bw + gap),
+            y = y0 + (row - 1) * (bh + gap),
             w = bw,
             h = bh,
         }
@@ -87,9 +101,13 @@ function Menu.draw()
     love.graphics.line(W / 2 + swing, 14, W / 2 + swing, 110)
     Blocks.draw(W / 2 + swing - 55, 110, 110, 4)
 
-    Menu.fontTitle = Menu.fontTitle or I18n.font(52)
-    Menu.fontMedium = Menu.fontMedium or I18n.font(18)
-    Menu.fontSmall = Menu.fontSmall or I18n.font(14)
+    -- Narrow portrait slices show less than the design width: shrink the
+    -- wide single-line texts so they stay inside the visible slice.
+    local viewW = Screen.visibleRight() - Screen.visibleLeft()
+    local shrink = math.min(1, viewW / 480)
+    Menu.fontTitle = I18n.font(math.floor(52 * shrink))
+    Menu.fontMedium = I18n.font(math.floor(18 * math.min(1, viewW / 360)))
+    Menu.fontSmall = I18n.font(math.floor(14 * math.min(1, viewW / 360)))
 
     -- title
     love.graphics.setFont(Menu.fontTitle)
@@ -131,7 +149,7 @@ end
 
 function Menu.drawLanguageSelector()
     local btns = languageButtons()
-    local labelY = btns[1].y + btns[1].h + 10
+    local labelY = btns[#btns].y + btns[#btns].h + 10
 
     local label = I18n.t("menu.language") .. "   (LEFT / RIGHT)"
     love.graphics.setFont(Menu.fontSmall)

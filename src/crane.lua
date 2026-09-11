@@ -3,6 +3,7 @@
 
 local Config = require("src.config")
 local Blocks = require("src.blocks")
+local Screen = require("src.screen")
 
 local W = Config.screen.width
 
@@ -15,7 +16,10 @@ function Crane.new(blockWidth, floors)
     self.phase = "swing"
     self.speed = Config.crane.baseSpeed
         + math.min(Config.crane.maxSpeedBonus, (floors or 0) * Config.crane.speedPerFloor)
-    self.amplitude = math.min(W * Config.crane.amplitudeRatio, (W - blockWidth) / 2 - 6)
+    -- Swing stays inside the visible slice: portrait windows show less than
+    -- the full logical width, so clamp the amplitude to what is on screen.
+    local playW = math.min(W, Screen.visibleRight() - Screen.visibleLeft())
+    self.amplitude = math.min(playW * Config.crane.amplitudeRatio, (playW - blockWidth) / 2 - 6)
     self.centerX = W / 2
     self.t = love.math.random() * math.pi * 2 / self.speed -- random swing phase
     self.hookY = 0       -- beam height (world y), recomputed each update

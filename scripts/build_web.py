@@ -79,13 +79,23 @@ INDEX_HTML = """<!doctype html>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
 
     <script type='text/javascript'>
-      // Keep the drawing buffer matched to the viewport (device pixels
-      // included); the game letterboxes its 600x800 logical area itself.
+      // Keep the drawing buffer matched to the viewport.  CSS pixels, NOT
+      // multiplied by devicePixelRatio: that is the convention love.js's own
+      // fullscreen hook uses (SDL handles HiDPI internally), and scaling by
+      // dpr here desyncs SDL's window size from the canvas on HiDPI screens.
+      // Must go through Module.setCanvasSize: assigning canvas.width
+      // directly leaves SDL's cached window size stale until the next real
+      // resize event, so a freshly loaded page would render off-center.
       function fitCanvas() {
-        var canvas = document.getElementById("canvas");
-        var dpr = window.devicePixelRatio || 1;
-        canvas.width = Math.floor(window.innerWidth * dpr);
-        canvas.height = Math.floor(window.innerHeight * dpr);
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        if (Module && typeof Module.setCanvasSize === "function") {
+          Module.setCanvasSize(w, h);
+        } else {
+          var canvas = document.getElementById("canvas");
+          canvas.width = w;
+          canvas.height = h;
+        }
       }
       window.addEventListener("resize", fitCanvas);
 
@@ -133,10 +143,9 @@ INDEX_HTML = """<!doctype html>
           if (text) {
             drawLoadingText(text);
           } else if (Module.remainingDependencies === 0) {
+            fitCanvas(); // size first: the very first visible frame is then centred
             document.getElementById('loadingCanvas').style.display = 'none';
-            var game = document.getElementById('canvas');
-            game.style.visibility = 'visible';
-            fitCanvas();
+            document.getElementById('canvas').style.visibility = 'visible';
           }
         },
         totalDependencies: 0,
@@ -155,8 +164,30 @@ INDEX_HTML = """<!doctype html>
         };
       };
 
+      // Boot-order guard: Module.setCanvasSize only exists once the wasm
+      // runtime is up, and SDL re-imposes the conf.lua size when it
+      // initialises.  Poll until the drawing buffer really matches the
+      // viewport so a fresh load is centred no matter who wins the race.
+      function canvasMatchesViewport() {
+        var c = document.getElementById("canvas");
+        return !!c && c.width === window.innerWidth
+                   && c.height === window.innerHeight;
+      }
+      var tbStable = 0, tbTries = 0;
+      var tbPoll = setInterval(function () {
+        tbTries++;
+        if (canvasMatchesViewport()) {
+          tbStable++;
+          if (tbStable > 3 || tbTries > 40) clearInterval(tbPoll);
+        } else {
+          tbStable = 0;
+          fitCanvas();
+        }
+      }, 250);
+
       var applicationLoad = function (e) {
         Love(Module);
+        fitCanvas();
       }
     </script>
     <script type="text/javascript" src="game.js"></script>
