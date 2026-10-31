@@ -1,0 +1,48 @@
+# Публикация Windows-дистрибутива при пуше тега v* (схема из 04-first-steps.md §5).
+# Один и тот же workflow в каждом репозитории игры: версионирование автономно.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write   # нужно для gh release create
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.12'
+
+      # Рантайм LÖVE (~15 МБ) качается один раз и переиспользуется между прогонами.
+      - name: Cache LOVE runtime
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: love-11.5-win64-${{ runner.os }}
+
+      - name: Build exe distribution
+        run: uv run python scripts/build_exe.py
+
+      - name: Compute sha256
+        shell: pwsh
+        run: |
+          Get-FileHash dist/*.zip -Algorithm SHA256 | ForEach-Object {
+            "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" | Out-File -Encoding utf8 "$($_.Path).sha256"
+          }
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            dist/*.zip dist/*.sha256

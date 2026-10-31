@@ -17,9 +17,10 @@ Pipeline:
 
 Usage:
     uv run python scripts/build_web.py
-    then serve: python3 -m http.server -d web 8000
+    then serve: uv run python scripts/serve_web.py
 """
 
+import hashlib
 import re
 import shutil
 import subprocess
@@ -70,7 +71,7 @@ INDEX_HTML = """<!doctype html>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" content="#0d1117">
-    <title>Tower Bloxx</title>
+    <title>Tower Bloxx · build __V__</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129521;</text></svg>">
     <link rel="stylesheet" type="text/css" href="theme/love.css">
   </head>
@@ -190,8 +191,8 @@ INDEX_HTML = """<!doctype html>
         fitCanvas();
       }
     </script>
-    <script type="text/javascript" src="game.js"></script>
-    <script async type="text/javascript" src="love.js" onload="applicationLoad(this)"></script>
+    <script type="text/javascript" src="game.js?v=__V__"></script>
+    <script async type="text/javascript" src="love.js?v=__V__" onload="applicationLoad(this)"></script>
   </body>
 </html>
 """
@@ -256,9 +257,29 @@ def patch_persistence() -> None:
     print("  patched save-dir persistence (IDBFS reverse sync)")
 
 
-def write_theme() -> None:
-    (WEB / "index.html").write_text(
-        INDEX_HTML.replace("__MEMORY__", str(MEMORY_BYTES)), encoding="utf-8")
+# Content-hash the game data and rename it, then point game.js at the new
+# name.  A fresh filename per build defeats every cache layer at once:
+# the browser's HTTP cache (even a heuristically-fresh stale entry can't
+# satisfy a URL it has never seen), Emscripten's IndexedDB preload cache
+# (keyed by package name), and any CDN in front of a deployed copy.
+def version_assets() -> str:
+    digest = hashlib.sha256((BUILD / "game.love").read_bytes()).hexdigest()[:8]
+    (WEB / "game.data").rename(WEB / f"game.{digest}.data")
+    game_js = WEB / "game.js"
+    text = game_js.read_text(encoding="utf-8")
+    if text.count("game.data") != 4:
+        sys.exit("error: love.js layout changed - expected 4 'game.data' "
+                 "references in game.js")
+    game_js.write_text(text.replace("game.data", f"game.{digest}.data"),
+                       encoding="utf-8")
+    print(f"  versioned data bundle: game.{digest}.data")
+    return digest
+
+
+def write_theme(version: str) -> None:
+    html = INDEX_HTML.replace("__MEMORY__", str(MEMORY_BYTES))
+    html = html.replace("__V__", version)
+    (WEB / "index.html").write_text(html, encoding="utf-8")
     (WEB / "theme" / "love.css").write_text(LOVE_CSS, encoding="utf-8")
     print("  wrote themed index.html + theme/love.css")
 
@@ -269,10 +290,10 @@ def main() -> None:
     make_love_zip(BUILD / "game.love")
     transpile(BUILD / "game.love")
     patch_persistence()
-    write_theme()
+    write_theme(version_assets())
     total = sum(p.stat().st_size for p in WEB.rglob("*") if p.is_file())
     print(f"  web/ ready: {total / 1e6:.1f} MB - serve it over HTTP, e.g.")
-    print("    python3 -m http.server -d web 8000")
+    print("    uv run python scripts/serve_web.py")
 
 
 if __name__ == "__main__":
